@@ -152,7 +152,36 @@ require('lazy').setup({
   -- Use `opts = {}` to force a plugin to be loaded.
   --
   { 'github/copilot.vim' },
-
+  {
+    'CopilotC-Nvim/CopilotChat.nvim',
+    branch = 'canary',
+    dependencies = {
+      { 'zbirenbaum/copilot.lua' }, -- or github/copilot.vim
+      { 'nvim-lua/plenary.nvim' }, -- for curl, log wrapper
+    },
+    opts = {
+      debug = true, -- Enable debugging
+      allow_insecure = true,
+      -- See Configuration section for rest
+    },
+    -- See Commands section for default commands if you want to lazy load on them
+  },
+  { 'lewis6991/gitsigns.nvim' },
+  {
+    'folke/noice.nvim',
+    event = 'VeryLazy',
+    opts = {
+      -- add any options here
+    },
+    dependencies = {
+      -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
+      'MunifTanjim/nui.nvim',
+      -- OPTIONAL:
+      --   `nvim-notify` is only needed, if you want to use the notification view.
+      --   If not available, we use `mini` as the fallback
+      'rcarriga/nvim-notify',
+    },
+  },
   --  This is equivalent to:
   --    require('Comment').setup({})
   -- "gc" to comment visual regions/lines
