@@ -15,7 +15,6 @@ vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
 vim.opt.relativenumber = true
-
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
 
@@ -257,7 +256,21 @@ require('lazy').setup({
       'nvim-tree/nvim-web-devicons',
     },
     config = function()
-      require('nvim-tree').setup {}
+      require('nvim-tree').setup {
+        sort = {
+          sorter = 'case_sensitive',
+        },
+        view = {
+          width = 30,
+        },
+        renderer = {
+          group_empty = true,
+        },
+        filters = {
+          dotfiles = false,
+        },
+      }
+      vim.api.nvim_set_keymap('n', '<leader>t', ':NvimTreeToggle<CR>', {})
     end,
   },
   { -- Fuzzy Finder (files, lsp, etc)
@@ -338,7 +351,7 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
-      vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+      vim.keymap.set('n', '<leader>/', builtin.buffers, { desc = '[ ] Find existing buffers' })
 
       -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>/', function()
