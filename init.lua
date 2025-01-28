@@ -1,6 +1,6 @@
---  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
-vim.g.mapleader = ' '
+vim.g.mapleader = ','
 vim.g.maplocalleader = ' '
+vim.api.nvim_set_keymap('n', '<Leader>w', ':w<CR>', { noremap = true, silent = false })
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = true
@@ -150,18 +150,15 @@ require('lazy').setup({
   --
   -- Use `opts = {}` to force a plugin to be loaded.
   --
-  { 'github/copilot.vim' },
+  -- { 'github/copilot.vim' },
   {
     'CopilotC-Nvim/CopilotChat.nvim',
-    branch = 'canary',
     dependencies = {
-      { 'zbirenbaum/copilot.lua' }, -- or github/copilot.vim
+      { 'github/copilot.vim' }, -- or zbirenbaum/copilot.lua
       { 'nvim-lua/plenary.nvim' }, -- for curl, log wrapper
     },
     opts = {
-      debug = true, -- Enable debugging
-      allow_insecure = true,
-      -- See Configuration section for rest
+      -- See Configuration section for options
     },
     -- See Commands section for default commands if you want to lazy load on them
   },
@@ -219,28 +216,28 @@ require('lazy').setup({
   -- after the plugin has been loaded:
   --  config = function() ... end
 
-  { -- Useful plugin to show you pending keybinds.
-    'folke/which-key.nvim',
-    event = 'VimEnter', -- Sets the loading event to 'VimEnter'
-    config = function() -- This is the function that runs, AFTER loading
-      require('which-key').setup()
+  --{ -- Useful plugin to show you pending keybinds.
+  '-- folke/which-key.nvim',
+  --event = 'VimEnter', -- Sets the loading event to 'VimEnter'
+  --config = function() -- This is the function that runs, AFTER loading
+  -- require('which-key').setup()
 
-      -- Document existing key chains
-      require('which-key').register {
-        ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
-        ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
-        ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
-        ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
-        ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
-        ['<leader>t'] = { name = '[T]oggle', _ = 'which_key_ignore' },
-        ['<leader>h'] = { name = 'Git [H]unk', _ = 'which_key_ignore' },
-      }
-      -- visual mode
-      require('which-key').register({
-        ['<leader>h'] = { 'Git [H]unk' },
-      }, { mode = 'v' })
-    end,
-  },
+  -- Document existing key chains
+  --require('which-key').register {
+  -- ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
+  -- ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
+  -- ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
+  -- ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
+  --['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
+  --['<leader>t'] = { name = '[T]oggle', _ = 'which_key_ignore' },
+  --  ['<leader>h'] = { name = 'Git [H]unk', _ = 'which_key_ignore' },
+  --  }
+  -- visual mode
+  --  require('which-key').register({
+  --  ['<leader>h'] = { 'Git [H]unk' },
+  -- }, { mode = 'v' })
+  -- end,
+  --},
 
   -- NOTE: Plugins can specify dependencies.
   --
@@ -270,7 +267,7 @@ require('lazy').setup({
           dotfiles = false,
         },
       }
-      vim.api.nvim_set_keymap('n', '<leader>t', ':NvimTreeToggle<CR>', {})
+      --vim.api.nvim_set_keymap('n', '<leader>t', ':NvimTreeFocus<CR>', {})
     end,
   },
   { -- Fuzzy Finder (files, lsp, etc)
@@ -564,6 +561,8 @@ require('lazy').setup({
         },
       }
 
+      require('lspconfig').jedi_language_server.setup {}
+
       -- Ensure the servers and tools above are installed
       --  To check the current status of installed tools and/or manually install
       --  other tools, you can run
@@ -805,7 +804,7 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'vim', 'vimdoc' },
+      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'vim', 'vimdoc', 'python' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
