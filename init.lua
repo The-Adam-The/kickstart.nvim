@@ -68,10 +68,19 @@ vim.o.tabstop = 4
 vim.o.shiftwidth = 4
 vim.o.expandtab = true
 vim.o.smartindent = true
-vim.o.shell = 'pwsh.exe'
+-- vim.o.shell = 'pwsh.exe'
 
--- [[ Basic Keymaps ]]
---  See `:help vim.keymap.set()`
+local powershell_options = {
+  shell = vim.fn.executable 'pwsh' == 1 and 'pwsh' or 'powershell',
+  shellcmdflag = '-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command [Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;',
+  shellredir = '-RedirectStandardOutput %s -NoNewWindow -Wait',
+  shellpipe = '2>&1 | Out-File -Encoding UTF8 %s; exit $LastExitCode',
+  shellquote = '',
+  shellxquote = '',
+}
+for option, value in pairs(powershell_options) do
+  vim.opt[option] = value
+end
 
 -- Set highlight on search, but clear on pressing <Esc> in normal mode
 vim.opt.hlsearch = true
@@ -90,7 +99,7 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 -- NOTE: This won't work in all terminal emulators/tmux/etc. Try your own mapping
 -- or just use <C-\><C-n> to exit terminal mode
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
-
+vim.keymap.set('n', '<leader>tt', '<cmd>below terminal<CR>', { desc = 'Open a new [T]erminal' })
 -- TIP: Disable arrow keys in normal mode
 -- vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
 -- vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
@@ -106,24 +115,53 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
-vim.keymap.set('n', '<leader>db', '<cmd>lua require"dap".toggle_breakpoint()<CR>', { desc = 'Toggle [D]ebug [B]reakpoint' })
+-- Debug keymaps
+vim.keymap.set('n', '<leader>db', function()
+  local dap = require 'dap'
+  dap.toggle_breakpoint()
+end, { desc = 'Toggle [D]ebug [B]reakpoint' })
+
+vim.keymap.set('n', '<leader>dc', function()
+  local dap = require 'dap'
+  dap.clear_breakpoints()
+end, { desc = 'Clear [D]ebug [C]lear breakpoints' })
+
+vim.keymap.set('n', '<leader>dr', function()
+  local dap = require 'dap'
+  vim.cmd 'wa'
+  require('dap').continue()
+end, { desc = 'Start [D]ebug [R]un' })
 
 vim.keymap.set('n', '<F5>', function()
+  vim.cmd 'write'
   require('dap').continue()
 end)
+
 vim.keymap.set('n', '<F10>', function()
   require('dap').step_over()
 end)
-vim.keymap.set('n', '<F11>', function()
+
+vim.keymap.set('n', '<S-F10>', function()
   require('dap').step_into()
 end)
-vim.keymap.set('n', '<F12>', function()
+
+vim.keymap.set('n', '<C-F10>', function()
   require('dap').step_out()
 end)
 
-vim.keymap.set('n', '<leader>dpr', function()
-  require('dap-python').test_method()
-end, { desc = 'Debug [P]ython [R]un' })
+vim.keymap.set('n', '<S-f5>', function()
+  require('dap').close()
+  require('dapui').close()
+end)
+
+vim.keymap.set('n', '<leader>dt', function()
+  require('dapui').toggle()
+end, { desc = 'Toggle [D]ebug [T]erminal' })
+
+-- vim.keypmap.set('n', '<leader>dr', function()
+--   require('dap').repl.open()
+-- end, { desc = 'Debug [R]epl' })
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -147,6 +185,12 @@ if not vim.loop.fs_stat(lazypath) then
 end ---@diagnostic disable-next-line: undefined-field
 vim.opt.rtp:prepend(lazypath)
 
+local hl_list = {}
+for i, color in pairs { '#662121', '#767621', '#216631', '#325a5e', '#324b7b', '#562155' } do
+  local name = 'IndentBlanklineIndent' .. i
+  vim.api.nvim_set_hl(0, name, { fg = color })
+  table.insert(hl_list, name)
+end
 -- [[ Configure and install plugins ]]
 --
 --  To check the current status of your plugins, run
@@ -179,8 +223,17 @@ require('lazy').setup({
       -- See Configuration section for options
     },
     -- See Commands section for default commands if you want to lazy load on them
+
+    vim.keymap.set('n', '<Leader>c', ':CopilotChatToggle<CR>', { desc = 'Opens and focuses CopilotChat' }),
   },
-  { 'lewis6991/gitsigns.nvim' },
+  {
+    'lewis6991/gitsigns.nvim',
+    opts = {
+      current_line_blame = true,
+    },
+    -- Git keymaps
+    vim.keymap.set('n', '<leader>gb', ':Gitsigns toggle_current_line_blame<CR>', { desc = 'Toggle [G]it Blame [l]ine' }),
+  },
   {
     'nvim-lualine/lualine.nvim',
     dependencies = { 'nvim-tree/nvim-web-devicons' },
@@ -191,6 +244,16 @@ require('lazy').setup({
     opts = {
       -- add any options here
     },
+    config = function()
+      require('noice').setup {
+        routes = {
+          {
+            view = 'notify',
+            filter = { event = 'msg_showmode' },
+          },
+        },
+      }
+    end,
     dependencies = {
       -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
       'MunifTanjim/nui.nvim',
@@ -222,7 +285,6 @@ require('lazy').setup({
       },
     },
   },
-
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
   --
   -- This is often very useful to both group configuration, as well as handle
@@ -238,28 +300,42 @@ require('lazy').setup({
   -- after the plugin has been loaded:
   --  config = function() ... end
 
-  --{ -- Useful plugin to show you pending keybinds.
-  '-- folke/which-key.nvim',
-  --event = 'VimEnter', -- Sets the loading event to 'VimEnter'
-  --config = function() -- This is the function that runs, AFTER loading
-  -- require('which-key').setup()
-
-  -- Document existing key chains
-  --require('which-key').register {
-  -- ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
-  -- ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
-  -- ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
-  -- ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
-  --['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
-  --['<leader>t'] = { name = '[T]oggle', _ = 'which_key_ignore' },
-  --  ['<leader>h'] = { name = 'Git [H]unk', _ = 'which_key_ignore' },
-  --  }
-  -- visual mode
-  --  require('which-key').register({
-  --  ['<leader>h'] = { 'Git [H]unk' },
-  -- }, { mode = 'v' })
-  -- end,
-  --},
+  {
+    -- amongst your other plugins
+    {
+      'akinsho/toggleterm.nvim',
+      version = '*',
+      config = function()
+        require('toggleterm').setup {
+          open_mapping = [[<c-\>]],
+          persist_size = true,
+          autochdir = true,
+          shade_terminals = true,
+          shading_factor = -50,
+        }
+      end,
+    },
+    -- or
+    -- {'akinsho/toggleterm.nvim', version = "*", opts = {--[[ things you want to change go here]]}}
+  },
+  {
+    'folke/which-key.nvim',
+    event = 'VeryLazy',
+    opts = {
+      -- your configuration comes here
+      -- or leave it empty to use the default settings
+      -- refer to the configuration section below
+    },
+    keys = {
+      {
+        '<leader>?',
+        function()
+          require('which-key').show { global = false }
+        end,
+        desc = 'Buffer Local Keymaps (which-key)',
+      },
+    },
+  },
   { 'mfussenegger/nvim-dap' },
   {
     'mfussenegger/nvim-dap-python',
@@ -270,15 +346,24 @@ require('lazy').setup({
       'nvim-neotest/nvim-nio',
     },
     config = function(_, opts)
-      local path = '~/.virtualenvs/debugpy/bin/python'
+      local path = '~/.virtualenvs/debugpy/scripts/python'
       require('dap-python').setup(path)
       table.insert(require('dap').configurations.python, {
         type = 'python',
         request = 'launch',
         name = 'Launch file',
         program = '${file}',
+        console = 'externalTerminal',
       })
     end,
+  },
+
+  {
+    'lukas-reineke/indent-blankline.nvim',
+    main = 'ibl',
+    ---@module "ibl"
+    ---@type ibl.config
+    opts = {},
   },
   {
     'rcarriga/nvim-dap-ui',
@@ -298,6 +383,7 @@ require('lazy').setup({
       end
     end,
   },
+
   -- NOTE: Plugins can specify dependencies.
   --
   -- The dependencies are proper plugin specifications as well - anything
@@ -326,7 +412,8 @@ require('lazy').setup({
           dotfiles = false,
         },
       }
-      vim.api.nvim_set_keymap('n', '<leader>n', ':NvimTreeFocus<CR>', {})
+      vim.api.nvim_set_keymap('n', '<leader>..', ':NvimTreeFocus<CR>', {})
+      vim.api.nvim_set_keymap('n', '<leader>.t', ':NvimTreeToggle<CR>', {})
     end,
   },
   { -- Fuzzy Finder (files, lsp, etc)
@@ -805,13 +892,15 @@ require('lazy').setup({
     -- change the command in the config to whatever the name of that colorscheme is.
     --
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'folke/tokyonight.nvim',
+    -- 'folke/tokyonight.nvim',
+    'rmehri01/onenord.nvim',
     priority = 1000, -- Make sure to load this before all the other start plugins.
     init = function()
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
+      -- vim.cmd.colorscheme 'tokyonight-night'
+      vim.cmd.colorscheme 'onenord'
 
       -- You can configure highlights by doing something like:
       vim.cmd.hi 'Comment gui=none'
