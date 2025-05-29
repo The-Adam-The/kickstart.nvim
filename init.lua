@@ -1,8 +1,17 @@
+-- disable netrw at the very start of your init.lua(nvim-tree)
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+
+-- optionally enable 24-bit colour (nvim-tree)
+vim.opt.termguicolors = true
+
 vim.g.mapleader = ','
 vim.g.maplocalleader = ' '
-vim.api.nvim_set_keymap('n', '<Leader>w', ':w<CR>', { noremap = true, silent = false })
-vim.api.nvim_set_keymap('n', '<Leader>l', ':set invrelativenumber<CR>', { noremap = true, silent = true })
--- Set to true if you have a Nerd Font installed and selected in the terminal
+-- vim.api.nvim_set_keymap('n', '<Leader>w', ':w<CR>', { noremap = true, silent = false })
+
+-- options
+vim.keymap.set('n', '<Leader>oL', ':set invnumber<CR>', { desc = '[O]ptions Toggle [L]ine numbers' })
+
 vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
@@ -63,7 +72,6 @@ vim.opt.cursorline = true
 
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
-
 vim.o.tabstop = 4
 vim.o.shiftwidth = 4
 vim.o.expandtab = true
@@ -99,7 +107,6 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 -- NOTE: This won't work in all terminal emulators/tmux/etc. Try your own mapping
 -- or just use <C-\><C-n> to exit terminal mode
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
-vim.keymap.set('n', '<leader>tt', '<cmd>below terminal<CR>', { desc = 'Open a new [T]erminal' })
 -- TIP: Disable arrow keys in normal mode
 -- vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
 -- vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
@@ -110,10 +117,67 @@ vim.keymap.set('n', '<leader>tt', '<cmd>below terminal<CR>', { desc = 'Open a ne
 --  Use CTRL+<hjkl> to switch between windows
 --
 --  See `:help wincmd` for a list of all window commands
-vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
-vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
-vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
-vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+vim.keymap.set('n', '<C-h>', '<cmd>w<CR><C-w><C-h>', { desc = 'Move focus to the left window' })
+vim.keymap.set('n', '<C-l>', '<cmd>w<CR><C-w><C-l>', { desc = 'Move focus to the right window' })
+vim.keymap.set('n', '<C-j>', '<cmd>w<CR><C-w><C-j>', { desc = 'Move focus to the lower window' })
+vim.keymap.set('n', '<C-k>', '<cmd>w<CR><C-w><C-k>', { desc = 'Move focus to the upper window' })
+
+vim.keymap.set('n', '<C-f>', '<cmd>w<CR><C-+>', { desc = 'Increase height of current window' })
+vim.keymap.set('n', '<C-b>', '<cmd>w<CR><C-->', { desc = 'Decrease height of current window' })
+vim.keymap.set('n', '<C-d>', '<cmd>w<CR><C-w>>', { desc = 'Increase width of current window' })
+vim.keymap.set('n', '<C-a>', '<cmd>w<CR><C-w><', { desc = 'Decrease width of current window' })
+
+vim.keymap.set('n', '<leader>wh', function()
+  vim.cmd 'split'
+end, { desc = 'Split [W]indow [H]orizontally' })
+
+vim.keymap.set('n', '<leader>wv', function()
+  vim.cmd 'vsplit'
+end, { desc = 'Split [W]indow [V]ertically' })
+
+vim.keymap.set('n', '<leader>wnv', function()
+  vim.cmd 'vnew'
+end, { desc = '[W]indow [N]ew [V]ertical' })
+
+vim.keymap.set('n', '<leader>wnh', function()
+  vim.cmd 'new'
+end, { desc = '[W]indow [N]ew [H]orizonal' })
+
+vim.keymap.set('n', '<leader>wp', function()
+  vim.cmd 'wincmd p'
+end, { desc = '[W]indow [P]revious' })
+
+vim.keymap.set('n', '<leader>wo', function()
+  vim.cmd 'wincmd o'
+end, { desc = 'Current [W]indow [O]nly' })
+
+vim.keymap.set('n', '<leader>wq', function()
+  vim.cmd 'q'
+end, { desc = '[W]indow [Q]uit' })
+
+-- Tab keymaps
+vim.keymap.set('n', '<leader>tn', function()
+  vim.cmd 'tabnew'
+end, { desc = '[T]ab [N]ew' })
+
+vim.keymap.set('n', '<leader>tq', function()
+  vim.cmd 'tabclose'
+end, { desc = '[T]ab [Q]uit' })
+
+-- ToggleTerm keymaps
+function _G.set_terminal_keymaps()
+  local opts = { buffer = 0 }
+  vim.keymap.set('t', '<esc>', [[<C-\><C-n>]], opts)
+  vim.keymap.set('t', 'jk', [[<C-\><C-n>]], opts)
+  vim.keymap.set('t', '<C-h>', [[<Cmd>wincmd h<CR>]], opts)
+  vim.keymap.set('t', '<C-j>', [[<Cmd>wincmd j<CR>]], opts)
+  vim.keymap.set('t', '<C-k>', [[<Cmd>wincmd k<CR>]], opts)
+  vim.keymap.set('t', '<C-l>', [[<Cmd>wincmd l<CR>]], opts)
+  vim.keymap.set('t', '<C-w>', [[<C-\><C-n><C-w>]], opts)
+end
+
+-- if you only want these mappings for toggle term use term://*toggleterm#* instead
+vim.cmd 'autocmd! TermOpen term://* lua set_terminal_keymaps()'
 
 -- Debug keymaps
 vim.keymap.set('n', '<leader>db', function()
@@ -133,7 +197,6 @@ vim.keymap.set('n', '<leader>dr', function()
 end, { desc = 'Start [D]ebug [R]un' })
 
 vim.keymap.set('n', '<F5>', function()
-  vim.cmd 'write'
   require('dap').continue()
 end)
 
@@ -164,6 +227,14 @@ end, { desc = 'Toggle [D]ebug [T]erminal' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
+
+vim.keymap.set('n', 'gct', function()
+  -- This is a custom keymap to insert a TODO comment
+  require('Comment.api').toggle.linewise.current()
+  local line = vim.api.nvim_get_current_line()
+  vim.api.nvim_set_current_line(line .. ' TODO: ')
+  -- vim.api.nvim_put({ ' TODO: ' }, 'c', true, true)
+end, { desc = 'Insert # [T]ODO: [C]omment' })
 
 -- Highlight when yanking (copying) text
 --  Try it with `yap` in normal mode
@@ -224,7 +295,7 @@ require('lazy').setup({
     },
     -- See Commands section for default commands if you want to lazy load on them
 
-    vim.keymap.set('n', '<Leader>c', ':CopilotChatToggle<CR>', { desc = 'Opens and focuses CopilotChat' }),
+    vim.keymap.set('n', '<Leader>ct', ':CopilotChatToggle<CR>', { desc = 'Opens and focuses CopilotChat' }),
   },
   {
     'lewis6991/gitsigns.nvim',
@@ -232,7 +303,8 @@ require('lazy').setup({
       current_line_blame = true,
     },
     -- Git keymaps
-    vim.keymap.set('n', '<leader>gb', ':Gitsigns toggle_current_line_blame<CR>', { desc = 'Toggle [G]it Blame [l]ine' }),
+    vim.keymap.set('n', '<leader>htl', ':Gitsigns toggle_current_line_blame<CR>', { desc = 'Toggle Current [G]it [L]ine [B]lame' }),
+    vim.keymap.set('n', '<leader>htb', ':Gitsigns blame<CR>', { desc = '[T]oggle Git [B]lame' }),
   },
   {
     'nvim-lualine/lualine.nvim',
@@ -244,6 +316,7 @@ require('lazy').setup({
     opts = {
       -- add any options here
     },
+    -- NOTE: If you want to use the notification view, you can add the following
     config = function()
       require('noice').setup {
         routes = {
@@ -336,7 +409,6 @@ require('lazy').setup({
       },
     },
   },
-  { 'mfussenegger/nvim-dap' },
   {
     'mfussenegger/nvim-dap-python',
     ft = 'python',
@@ -351,9 +423,8 @@ require('lazy').setup({
       table.insert(require('dap').configurations.python, {
         type = 'python',
         request = 'launch',
-        name = 'Launch file',
-        program = '${file}',
-        console = 'externalTerminal',
+        name = 'debug',
+        program = vim.fn.getcwd() .. '/main.py',
       })
     end,
   },
@@ -581,7 +652,17 @@ require('lazy').setup({
           -- Jump to the definition of the word under your cursor.
           --  This is where a variable was first declared, or where a function is defined, etc.
           --  To jump back, press <C-t>.
-          map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
+          map('gdc', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition using [C]urrent window')
+
+          map('gdh', function()
+            vim.cmd 'split'
+            require('telescope.builtin').lsp_definitions()
+          end, '[G]oto [D]efinition [H]orizontal split')
+
+          map('gdv', function()
+            vim.cmd 'vsplit'
+            require('telescope.builtin').lsp_definitions()
+          end, '[G]oto [D]efinition [V]ertical split')
 
           -- Find references for the word under your cursor.
           map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
@@ -592,16 +673,16 @@ require('lazy').setup({
 
           -- Jump to the type of the word under your cursor.
           --  Useful when you're not sure what type a variable is and you want to see
-          --  the definition of its *type*, not where it was *defined*.
-          map('<leader>D', require('telescope.builtin').lsp_type_definitions, 'Type [D]efinition')
+
+          map('<C-d>', require('telescope.builtin').lsp_type_definitions, 'Type [D]efinition')
 
           -- Fuzzy find all the symbols in your current document.
           --  Symbols are things like variables, functions, types, etc.
-          map('<leader>ds', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
+          map('<leader>ld', require('telescope.builtin').lsp_document_symbols, '[L]SP [D]ocument S]mbols')
 
           -- Fuzzy find all the symbols in your current workspace.
           --  Similar to document symbols, except searches over your entire project.
-          map('<leader>ws', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
+          map('<leader>lw', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[L]SP [W]orkspace Symbols')
 
           -- Rename the variable under your cursor.
           --  Most Language Servers support renaming across files, etc.
@@ -609,7 +690,7 @@ require('lazy').setup({
 
           -- Execute a code action, usually your cursor needs to be on top of an error
           -- or a suggestion from your LSP for this to activate.
-          map('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
+          map('<leader>lc', vim.lsp.buf.code_action, '[L]SP [C]ode Action')
 
           -- Opens a popup that displays documentation about the word under your cursor
           --  See `:help K` for why this keymap.
@@ -653,9 +734,9 @@ require('lazy').setup({
           --
           -- This may be unwanted, since they displace some of your code
           if client and client.server_capabilities.inlayHintProvider and vim.lsp.inlay_hint then
-            map('<leader>th', function()
+            map('<leader>oh', function()
               vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
-            end, '[T]oggle Inlay [H]ints')
+            end, '[O]ptions [T]oggle Inlay [H]ints')
           end
         end,
       })
@@ -679,8 +760,9 @@ require('lazy').setup({
       local servers = {
         -- clangd = {},
         -- gopls = {},
-        -- pyright = {},
+        pyright = {},
         -- rust_analyzer = {},
+        omnisharp = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -886,26 +968,92 @@ require('lazy').setup({
       }
     end,
   },
+  --
+  -- { -- You can easily change to a different colorscheme.
+  --   -- Change the name of the colorscheme plugin below, and then
+  --   -- change the command in the config to whatever the name of that colorscheme is.
+  --   --
+  --   -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
+  --   -- 'folke/tokyonight.nvim',
+  --   'rmehri01/onenord.nvim',
+  --   priority = 1000, -- Make sure to load this before all the other start plugins.
+  --   init = function()
+  --     -- Load the colorscheme here.
+  --     -- Like many other themes, this one has different styles, and you could load
+  --     -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
+  --     -- vim.cmd.colorscheme 'tokyonight-night'
+  --     vim.cmd.colorscheme 'onenord'
+  --
+  --     -- You can configure highlights by doing something like:
+  --     vim.cmd.hi 'Comment gui=none'
+  --   end,
+  --
+  -- }
 
-  { -- You can easily change to a different colorscheme.
-    -- Change the name of the colorscheme plugin below, and then
-    -- change the command in the config to whatever the name of that colorscheme is.
-    --
-    -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    -- 'folke/tokyonight.nvim',
-    'rmehri01/onenord.nvim',
-    priority = 1000, -- Make sure to load this before all the other start plugins.
+  {
+    'catppuccin/nvim',
+    name = 'catppuccin',
+    priority = 1000,
     init = function()
-      -- Load the colorscheme here.
-      -- Like many other themes, this one has different styles, and you could load
-      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      -- vim.cmd.colorscheme 'tokyonight-night'
-      vim.cmd.colorscheme 'onenord'
-
-      -- You can configure highlights by doing something like:
-      vim.cmd.hi 'Comment gui=none'
+      vim.g.catppuccin_flavour = 'frappe' -- latte, frappe, macchiato, mocha
+      vim.cmd.colorscheme 'catppuccin'
     end,
+
+    -- config = function()
+    --   require("catppuccin").setup({
+    --   flavour = "auto", -- latte, frappe, macchiato, mocha
+    --   background = { -- :h background
+    --       dark = "mocha",
+    --   },
+    --   transparent_background = false, -- disables setting the background color.
+    --   show_end_of_buffer = false, -- shows the '~' characters after the end of buffers
+    --   term_colors = false, -- sets terminal colors (e.g. `g:terminal_color_0`)
+    --   dim_inactive = {
+    --       enabled = false, -- dims the background color of inactive window
+    --       shade = "dark",
+    --       percentage = 0.15, -- percentage of the shade to apply to the inactive window
+    --   },
+    --   no_italic = false, -- Force no italic
+    --   no_bold = false, -- Force no bold
+    --   no_underline = false, -- Force no underline
+    --   styles = { -- Handles the styles of general hi groups (see `:h highlight-args`):
+    --       comments = { "italic" }, -- Change the style of comments
+    --       conditionals = { "italic" },
+    --       loops = {},
+    --       functions = {},
+    --       keywords = {},
+    --       strings = {},
+    --       variables = {},
+    --       numbers = {},
+    --       booleans = {},
+    --       properties = {},
+    --       types = {},
+    --       operators = {},
+    --       -- miscs = {}, -- Uncomment to turn off hard-coded styles
+    --   },
+    --   color_overrides = {},
+    --   custom_highlights = {},
+    --   default_integrations = true,
+    --   integrations = {
+    --       cmp = true,
+    --       gitsigns = true,
+    --       nvimtree = true,
+    --       treesitter = true,
+    --       notify = false,
+    --       mini = {
+    --           enabled = true,
+    --           indentscope_color = "",
+    --       },
+    --       -- For more plugins integrations please scroll down (https://github.com/catppuccin/nvim#integrations)
+    --   },
+    -- })
+    -- end
   },
+
+  -- setup must be called before loading
+  -- vim.cmd.colorscheme "catppuccin"
+  -- { 'catppuccin/nvim', name = 'catppuccin', priority = 1000 },
+  -- },
 
   -- Highlight todo, notes, etc in comments
   { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
@@ -951,7 +1099,7 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'vim', 'vimdoc', 'python' },
+      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'vim', 'vimdoc', 'python', 'c_sharp' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -994,7 +1142,7 @@ require('lazy').setup({
   -- require 'kickstart.plugins.lint',
   -- require 'kickstart.plugins.autopairs',
   -- require 'kickstart.plugins.neo-tree',
-  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
